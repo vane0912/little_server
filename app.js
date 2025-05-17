@@ -4,7 +4,11 @@ const app = express()
 const port = process.env.PORT || 3000 
 
 
-var Orders 
+var Orders = {
+    Min: "",
+    Rejected: "",
+    Completed: ""
+}
 app.use(express.json())
 app.use(cors())
 
