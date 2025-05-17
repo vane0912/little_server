@@ -18,11 +18,10 @@ app.get('/', (req, res) => {
 
 app.post('/', (req, res) => {
   console.log(req.body)
-  Orders = {
-    MIN : req.body.MIN,
-    Rejected: req.body.Rejected,
-    Completed: req.body.Completed
-  }
+  req.body.MIN ? Orders.Min = req.body.MIN :
+  req.body.Rejected ? Orders.Rejected = req.body.Rejected :
+  Orders.Completed = req.body.Completed
+
   res.send({send: 'Got post request'})
 
 })
