@@ -54,7 +54,7 @@ async function send_message(body){
 						},
 						{
 							"type": "text",
-							"text": `${body.pre_payment_missing}`
+							"text": `${body.pre_payment_missing.length > 0 ? body.pre_payment_missing : "No Translations are Missing"}`
 						}
 					]
 				}
@@ -99,7 +99,7 @@ async function send_message(body){
 						},
 						{
 							"type": "text",
-							"text": `${body.post_payment_missing}`
+							"text": `${body.post_payment_missing.length > 0 ? body.post_payment_missing : "No Translations are Missing"}`
 						}
 					]
 				}
