@@ -12,7 +12,7 @@ async function send_message(body){
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": "*UK ETA Translations Missing*"
+				"text": `*${body.product} Translations Missing*`
 			}
 		},
 		{
