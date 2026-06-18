@@ -14,7 +14,9 @@ let Orders = {
     Scheduling: ""
 }
 
-app.use(express.json())
+// Parse JSON even if the caller forgets/mis-sets the Content-Type header.
+// In serverless some clients send the body without "application/json".
+app.use(express.json({ type: () => true, limit: '25mb' }))
 app.use(cors())
 
 app.get('/', (req, res) => {
@@ -34,6 +36,11 @@ app.post('/', (req, res) => {
 app.post("/run-automations", async (req, res) => {
   try {
     console.log(req.body)
+    if (!req.body || typeof req.body !== 'object' || req.body.tests === undefined) {
+      return res.status(400).send({
+        message: "Invalid body. Send JSON with at least { tests, url, email, requester } and Content-Type: application/json",
+      })
+    }
     await runAutomations(req.body)
     res.send({ message: "Automations triggered" })
   } catch (error) {
@@ -46,6 +53,11 @@ app.post("/run-automations", async (req, res) => {
 app.post("/receive-report", async (req, res) => {
   try {
     console.log(req.body)
+    if (!req.body || typeof req.body !== 'object') {
+      return res.status(400).send({
+        message: "Invalid body. Send JSON and Content-Type: application/json",
+      })
+    }
     await send_report(req.body)
     res.send({ message: "Report sent" })
   } catch (error) {
