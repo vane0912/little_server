@@ -12,143 +12,8 @@ async function send_message(body){
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": `*${body.product} Translations Missing*`
+				"text": body.body
 			}
-		},
-		{
-			"type": "divider"
-		},
-		{
-			"type": "rich_text",
-			"elements": [
-				{
-					"type": "rich_text_section",
-					"elements": [
-						{
-							"type": "text",
-							"text": `Pre Payment: `,
-							"style": {
-								"bold": true
-							}
-						},
-						{
-							"type": "text",
-							"text": `${body.pre_payment}`
-						}
-					]
-				}
-			]
-		},
-		{
-			"type": "rich_text",
-			"elements": [
-				{
-					"type": "rich_text_section",
-					"elements": [
-						{
-							"type": "text",
-							"text": "Missing Translations: ",
-							"style": {
-								"bold": true
-							}
-						},
-						{
-							"type": "text",
-							"text": `${body.pre_payment_missing.length > 0 ? body.pre_payment_missing : "No Translations are Missing"}`
-						}
-					]
-				}
-			]
-		},
-		{
-			"type": "divider"
-		},
-		{
-			"type": "rich_text",
-			"elements": [
-				{
-					"type": "rich_text_section",
-					"elements": [
-						{
-							"type": "text",
-							"text": "Post Payment: ",
-							"style": {
-								"bold": true
-							}
-						},
-						{
-							"type": "text",
-							"text": `${body.post_payment}`
-						}
-					]
-				}
-			]
-		},
-		{
-			"type": "rich_text",
-			"elements": [
-				{
-					"type": "rich_text_section",
-					"elements": [
-						{
-							"type": "text",
-							"text": "Missing Translations: ",
-							"style": {
-								"bold": true
-							}
-						},
-						{
-							"type": "text",
-							"text": `${body.post_payment_missing.length > 0 ? body.post_payment_missing : "No Translations are Missing"}`
-						}
-					]
-				}
-			]
-		},
-		{
-			"type": "divider"
-		},
-		{
-			"type": "rich_text",
-			"elements": [
-				{
-					"type": "rich_text_section",
-					"elements": [
-						{
-							"type": "text",
-							"text": "Tested On: ",
-							"style": {
-								"bold": true
-							}
-						},
-						{
-							"type": "text",
-							"text": `${body.deployment}`
-						}
-					]
-				}
-			]
-		},
-		{
-			"type": "rich_text",
-			"elements": [
-				{
-					"type": "rich_text_section",
-					"elements": [
-						{
-							"type": "text",
-							"text": "Language: ",
-							"style": {
-								"bold": true
-							}
-						},
-						{
-							"type": "text",
-							"text": "Korean"
-						}
-					]
-				}
-			]
 		}
 	],
     channel: process.env.CONVERSATION_ID,
@@ -157,4 +22,30 @@ async function send_message(body){
   console.log(`Successfully send message ${result} in conversation ${process.env.CONVERSATION_ID}`);
 };
 
-module.exports = { send_message }
+// Replaces the "Send results message to Slack" node.
+// Posts the formatted automation results to the report channel.
+async function send_report(body) {
+  const stats = (body.report && body.report.stats) || {}
+  const minutes = Math.floor((stats.duration || 0) / 60000)
+  const successful = (stats.expected || 0) + (stats.flaky || 0)
+  const failed = stats.unexpected || 0
+
+  const text =
+    `*Automation Results*\n\n` +
+    `Requester: ${body.requester}\n` +
+    `Branch: ${body.branch_url}\n` +
+    `Email: ${body.email}\n\n` +
+    `- Time running: ${minutes} minutes\n\n` +
+    `- :party_blob: Succesful: ${successful} \n\n` +
+    `- :sadmomment: Failed tests: ${failed}\n\n` +
+    `Functionality report: https://vanessagonzalez-aut.github.io/playwrightQA/\n\n` +
+    `Visual validations report: https://vanessagonzalez-aut.github.io/playwrightQA/${body.percy_url}/report.html`
+
+  const channel = process.env.REPORT_CHANNEL_ID || 'C0ATN8W57T9'
+  const result = await web.chat.postMessage({ channel, text })
+
+  console.log(`Successfully sent report to conversation ${channel}`)
+  return result
+}
+
+module.exports = { send_message, send_report }
